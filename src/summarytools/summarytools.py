@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
+# -*- coding: cp936 -*-
 import pandas as pd
-
+import math
 
 def int_to_code(i):
     code = str(int(i))
@@ -8,6 +8,39 @@ def int_to_code(i):
         code = '0' * (6 - len(code)) + code
     return '="' + code + '"'
 
+def changeTime(allTime):
+    day = 24*60*60
+    hour = 60*60
+    min = 60
+    if allTime <60:
+        if allTime<10:
+            return "0%d"%math.ceil(allTime)
+        else:
+            return "%d"%math.ceil(allTime)
+    # elif  allTime > day:
+    #     days = divmod(allTime,day)
+    #     return "%dÌì%s"%(int(days[0]),changeTime(days[1]))
+    elif allTime > hour:
+        hours = divmod(allTime,hour)
+        if hours[0]<10:
+            return '0%d:%s'%(int(hours[0]),changeTime(hours[1]))
+        else:
+            return '%d:%s'%(int(hours[0]),changeTime(hours[1]))
+    else:
+        mins = divmod(allTime,min)
+        if mins[0]<10:
+            return "0%d:%s"%(int(mins[0]),changeTime(mins[1]))
+        else:
+            return "%d:%s"%(int(mins[0]),changeTime(mins[1]))
+
+
+def sec2timeInDay(seconds):
+    timestr=changeTime(seconds)
+    if len(timestr)==5:
+        timestr='00:'+timestr
+    if len(timestr)==2:
+        timestr='00:00:'+timestr
+    return timestr
 
 def price_gap(row):
     if (row['open_num'] > 0) and (row['close_num'] < 0):
@@ -17,7 +50,7 @@ def price_gap(row):
     else:
         gap = 0
 
-    # æ‰£é™¤æ‰‹ç»­è´¹
+    # ¿Û³ýÊÖÐø·Ñ
     gap = gap - row['close_price'] * 0.0013 - row['open_price'] * 0.0003
     return gap
 
@@ -27,7 +60,7 @@ def accuracy(row):
 
 
 def gap_to_fen(gap):
-    # gapè½¬å‘ä¸ºåˆ†
+    # gap×ª·¢Îª·Ö
     gap = int(gap * 100)
     return gap
 
@@ -47,9 +80,10 @@ def productivity(row):
 
 def hold_time(row):
     delta = row['close_time'] - row['open_time']
-    minutes = delta.seconds / 60
-    seconds = delta.seconds - minutes * 60
-    return "%d:%d" % (minutes, seconds)
+    # minutes = delta.seconds / 60
+    # seconds = delta.seconds - minutes * 60
+    # return "%d:%d" % (minutes, seconds)
+    return sec2timeInDay(delta.seconds)
 
 
 def format_datetime(dt):
@@ -60,8 +94,9 @@ def format_float(f):
     return "%.1f" % f
 
 
+
 def measure(file_in, file_out):
-    entrust_df = pd.read_csv(file_in)
+    entrust_df = pd.read_csv(file_in,encoding='gb2312')
     entrust_df = entrust_df.rename(columns={entrust_df.columns[0]: "time", entrust_df.columns[1]: "entrust_no",
                                             entrust_df.columns[2]: "code", entrust_df.columns[3]: "stock_name",
                                             entrust_df.columns[4]: "price", entrust_df.columns[5]: "num",
@@ -125,7 +160,7 @@ def measure(file_in, file_out):
     win = entrust_pair_df[entrust_pair_df['accuracy'] == 'T']
     gain_ration = win['accuracy'].count() * 1.0 / entrust_pair_df['accuracy'].count()
     length = len(entrust_pair_df)
-    entrust_pair_df.loc[length, 'stock_name'] = 'æ±‡æ€»'
+    entrust_pair_df.loc[length, 'stock_name'] = '»ã×Ü'
     entrust_pair_df.loc[length, 'profit'] = sum_profit
     entrust_pair_df.loc[length, 'amount'] = sum_amount
     entrust_pair_df.loc[length, 'accuracy'] = '%.2f' % (gain_ration * 100)
@@ -135,11 +170,11 @@ def measure(file_in, file_out):
     entrust_pair_df['amount'] = entrust_pair_df['amount'].map(format_float)
     entrust_pair_df['productivity'] = entrust_pair_df['productivity'].map(format_float)
 
-    zh_df = entrust_pair_df.rename(columns={'stock_name': 'è‚¡ç¥¨åç§°', 'code': 'è‚¡ç¥¨ä»£ç ', 'open_time': 'å¼€ä»“æ—¶é—´',
-                                            'open_price': 'å¼€ä»“ä»·æ ¼', 'open_num': 'å¼€ä»“æ•°é‡', 'close_time': 'å¹³ä»“æ—¶é—´',
-                                            'close_price': 'å¹³ä»“ä»·æ ¼', 'close_num': 'å¹³ä»“æ•°é‡', 'hold_time': 'æŒä»“æ—¶é—´',
-                                            'accuracy': 'æ­£ç¡®çŽ‡', 'price_gap': 'ä»·å·®', 'profit': 'ç›ˆåˆ©', 'amount': 'æˆäº¤é¢',
-                                            'productivity': 'åˆ©ç”¨çŽ‡'})
+    zh_df = entrust_pair_df.rename(columns={'stock_name': '¹ÉÆ±Ãû³Æ', 'code': '¹ÉÆ±´úÂë', 'open_time': '¿ª²ÖÊ±¼ä',
+                                            'open_price': '¿ª²Ö¼Û¸ñ', 'open_num': '¿ª²ÖÊýÁ¿', 'close_time': 'Æ½²ÖÊ±¼ä',
+                                            'close_price': 'Æ½²Ö¼Û¸ñ', 'close_num': 'Æ½²ÖÊýÁ¿', 'hold_time': '³Ö²ÖÊ±¼ä',
+                                            'accuracy': 'ÕýÈ·ÂÊ', 'price_gap': '¼Û²î', 'profit': 'Ó¯Àû', 'amount': '³É½»¶î',
+                                            'productivity': 'ÀûÓÃÂÊ'})
 
     zh_df.to_csv(file_out, index=False)
     data= entrust_pair_df[-1:].values[0]
@@ -147,13 +182,13 @@ def measure(file_in, file_out):
 
 
 def group_summary(group):
-    group.loc[-1,'brokerage']='æ±‡æ€»'
+    group.loc[-1,'brokerage']='»ã×Ü'
     group.loc[-1,'accuracy']=group['accuracy'].sum()
     group.loc[-1,'profit']=group['profit'].sum()
     group.loc[-1,'amount']=group['amount'].sum()
     group.loc[-1,'productivity']=group['productivity'].sum()
-    group=group.rename(columns={'brokerage':'åˆ¸å•†','account':'è´¦æˆ·','user':'äº¤æ˜“å‘˜','date':'æ—¥æœŸ','format':'æ ¼å¼','accuracy':'æ­£ç¡®çŽ‡','profit':'ç›ˆåˆ©','amount':'æˆäº¤é¢','productivity': 'åˆ©ç”¨çŽ‡'})
-    del group['æ ¼å¼']
+    group=group.rename(columns={'brokerage':'È¯ÉÌ','account':'ÕË»§','user':'½»Ò×Ô±','date':'ÈÕÆÚ','format':'¸ñÊ½','accuracy':'ÕýÈ·ÂÊ','profit':'Ó¯Àû','amount':'³É½»¶î','productivity': 'ÀûÓÃÂÊ'})
+    del group['¸ñÊ½']
     return group
 
 
@@ -161,19 +196,22 @@ import os
 import os.path
 if __name__ == "__main__":
 
-    #xxx = measure('./åŽŸå§‹è®°å½•/0523/åˆ˜ä¸€å¥‡_20160523.csv', './ç»Ÿè®¡/0523/åˆ˜ä¸€å¥‡_20160523.csv')
+    #xxx = measure('./Ô­Ê¼¼ÇÂ¼/0523/ÁõÒ»Ææ_20160523.csv', './Í³¼Æ/0523/ÁõÒ»Ææ_20160523.csv')
     #print(xxx)
 
-    rootdir = './åŽŸå§‹è®°å½•/0523'
-    summarydir='/æ±‡æ€»'
-    print('â€”â€”â€”â€”ä¸ªäººç»Ÿè®¡â€”â€”â€”â€”â€”')
+    rootdir = 'D:/github/tools/src/summarytools/20160524'
+    #rootdir = 'D:/github/tools/src/summarytools/bug'
+    summarydir='/»ã×Ü'
+    print('¡ª¡ª¡ª¡ª¸öÈËÍ³¼Æ¡ª¡ª¡ª¡ª¡ª')
     for parent,dirnames,filenames in os.walk(rootdir):
+
         if  parent==rootdir:
             fileInfoArr=[]
             date=None
             if not os.path.exists(rootdir+summarydir):
                     os.makedirs(rootdir+summarydir)
             for filename in filenames:
+                print('converting  '+filename)
                 fullFileName=os.path.join(parent,filename)
                 filenameArr=filename.split('_')
                 fileInfo=filenameArr[:-1]+filenameArr[-1].split('.')
@@ -182,23 +220,30 @@ if __name__ == "__main__":
                 rtdata=measure(fullFileName,rootdir+summarydir+'/'+filename)
                 fileInfo.extend(rtdata)
                 fileInfoArr.append(fileInfo)
-            print('â€”â€”â€”â€”è´¦æˆ·æ±‡æ€»â€”â€”â€”â€”â€”')
+            print('¡ª¡ª¡ª¡ªÕË»§»ã×Ü¡ª¡ª¡ª¡ª¡ª')
             gatherDF=pd.DataFrame(fileInfoArr,columns=['brokerage','account','user','date','format','accuracy','profit','amount','productivity'])
             gatherDFgyAccount=gatherDF.groupby(['account'])
+            accoutsummary=None
             for name,group in gatherDFgyAccount:
                 group=group_summary(group)
-                group.to_csv(rootdir+summarydir+'/'+name+'_'+date+'_è´¦æˆ·æ±‡æ€».csv',index=False)
-            #ä¸ªäººåˆ†å¼€æ±‡æ€»
+                group.to_csv(rootdir+summarydir+'/'+name+'_'+date+'_ÕË»§»ã×Ü.csv',index=False)
+                if accoutsummary is None:
+                    accoutsummary=group
+                else:
+                    accoutsummary=accoutsummary.append(group)
+
+            accoutsummary.to_csv(rootdir+summarydir+'/'+date+'_ÕË»§»ã×Ü.csv',index=False)
+            #¸öÈË·Ö¿ª»ã×Ü
             # gatherDFgyUser=gatherDF.groupby(['user'])
             # for name,group in gatherDFgyUser:
             #     group=group_summary(group)
-            #     group.to_csv(rootdir+'/process/'+name+'_æ±‡æ€».csv',index=False)
-            print('â€”â€”â€”â€”ä¸ªäººæ±‡æ€»â€”â€”â€”â€”â€”')
+            #     group.to_csv(rootdir+'/process/'+name+'_»ã×Ü.csv',index=False)
+            print('¡ª¡ª¡ª¡ª¸öÈË»ã×Ü¡ª¡ª¡ª¡ª¡ª')
             gatherDF=gatherDF.sort_values(by='profit')
-            gatherDF=gatherDF.rename(columns={'brokerage':'åˆ¸å•†','account':'è´¦æˆ·','user':'äº¤æ˜“å‘˜','date':'æ—¥æœŸ','format':'æ ¼å¼','accuracy':'æ­£ç¡®çŽ‡','profit':'ç›ˆåˆ©','amount':'æˆäº¤é¢','productivity': 'åˆ©ç”¨çŽ‡'})
-            del gatherDF['æ ¼å¼']
-            gatherDF.to_csv(rootdir+summarydir+'/'+date+'_ä¸ªäººæ±‡æ€».csv',index=False)
-    print('â€”â€”â€”â€”æ‰§è¡Œå®Œæˆâ€”â€”â€”â€”â€”')
+            gatherDF=gatherDF.rename(columns={'brokerage':'È¯ÉÌ','account':'ÕË»§','user':'½»Ò×Ô±','date':'ÈÕÆÚ','format':'¸ñÊ½','accuracy':'ÕýÈ·ÂÊ','profit':'Ó¯Àû','amount':'³É½»¶î','productivity': 'ÀûÓÃÂÊ'})
+            del gatherDF['¸ñÊ½']
+            gatherDF.to_csv(rootdir+summarydir+'/'+date+'_¸öÈË»ã×Ü.csv',index=False)
+    print('¡ª¡ª¡ª¡ªÖ´ÐÐÍê³É¡ª¡ª¡ª¡ª¡ª')
 
 
                 
