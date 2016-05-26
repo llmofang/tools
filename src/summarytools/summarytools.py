@@ -98,6 +98,9 @@ def format_float(f):
 def measure(file_in, file_out):
     entrust_df = pd.read_csv(file_in,encoding='gb2312')
     entrust_df=entrust_df.dropna(how='all')
+    if not entrust_df.columns.values[0]=='时间':
+        print('error 文件抬头错误 '+file_in)
+        raise SystemExit
     entrust_df = entrust_df.rename(columns={entrust_df.columns[0]: "time", entrust_df.columns[1]: "entrust_no",
                                             entrust_df.columns[2]: "code", entrust_df.columns[3]: "stock_name",
                                             entrust_df.columns[4]: "price", entrust_df.columns[5]: "num",
@@ -200,7 +203,7 @@ if __name__ == "__main__":
     #xxx = measure('./原始记录/0523/刘一奇_20160523.csv', './统计/0523/刘一奇_20160523.csv')
     #print(xxx)
     pd.options.mode.chained_assignment = None  # default='warn' 关闭警告log
-    rootdir = 'D:/github/tools/src/summarytools/20160525/bug'
+    rootdir = 'D:/github/tools/src/summarytools/20160524'
     #rootdir = 'D:/github/tools/src/summarytools/bug'
     summarydir='/汇总'
     print('————个人统计—————')
