@@ -97,6 +97,7 @@ def format_float(f):
 
 def measure(file_in, file_out):
     entrust_df = pd.read_csv(file_in,encoding='gb2312')
+    entrust_df=entrust_df.dropna(how='all')
     entrust_df = entrust_df.rename(columns={entrust_df.columns[0]: "time", entrust_df.columns[1]: "entrust_no",
                                             entrust_df.columns[2]: "code", entrust_df.columns[3]: "stock_name",
                                             entrust_df.columns[4]: "price", entrust_df.columns[5]: "num",
@@ -111,7 +112,7 @@ def measure(file_in, file_out):
                                             'close_time', 'close_price', 'close_num'])
 
     for i, row in entrust_df.iterrows():
-        unfinished = entrust_pair_df[(entrust_pair_df['code'] == row.code) & (entrust_pair_df['close_price'] == 0) &
+        unfinished = entrust_pair_df[(entrust_pair_df['stock_name'] == row.stock_name) & (entrust_pair_df['close_price'] == 0) &
                                      (entrust_pair_df['open_num'] * row.deal_num < 0)]
         if len(unfinished) == 0:
             entrust_pair_df.loc[len(entrust_pair_df)] = [row.stock_name, row.code, row.time, row.deal_price,
@@ -198,8 +199,8 @@ if __name__ == "__main__":
 
     #xxx = measure('./原始记录/0523/刘一奇_20160523.csv', './统计/0523/刘一奇_20160523.csv')
     #print(xxx)
-
-    rootdir = 'D:/github/tools/src/summarytools/20160524'
+    pd.options.mode.chained_assignment = None  # default='warn' 关闭警告log
+    rootdir = 'D:/github/tools/src/summarytools/20160525/bug'
     #rootdir = 'D:/github/tools/src/summarytools/bug'
     summarydir='/汇总'
     print('————个人统计—————')
@@ -214,6 +215,10 @@ if __name__ == "__main__":
                 print('converting  '+filename)
                 fullFileName=os.path.join(parent,filename)
                 filenameArr=filename.split('_')
+                if not len(filenameArr)==4:
+                    print('error 文件名格式错误   '+filename)
+                    raise SystemExit
+
                 fileInfo=filenameArr[:-1]+filenameArr[-1].split('.')
                 date=fileInfo[-2]
                 #print(filenameArr)
