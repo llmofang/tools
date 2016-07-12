@@ -242,7 +242,7 @@ if __name__ == "__main__":
 
             accoutsummary.to_csv(rootdir+summarydir+'/'+date+'_账户汇总.csv',index=False)
             #个人分开汇总
-            # gatherDFgyUser=gatherDF.groupby(['user'])
+            # gatherDFgyUser=gatherDF.groupby(['user'])``
             # for name,group in gatherDFgyUser:
             #     group=group_summary(group)
             #     group.to_csv(rootdir+'/process/'+name+'_汇总.csv',index=False)
