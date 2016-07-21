@@ -18,7 +18,7 @@ def add2kdb(data):
     q.close()
 
 if __name__ == "__main__":
-    date='20160711'
+    date='20160721'
     pd.options.mode.chained_assignment = None  # default='warn' 关闭警告log
     rootdir = './'+date+'/'
     summarydir='汇总'
@@ -53,6 +53,6 @@ if __name__ == "__main__":
         account_tmp.to_csv('./'+date+'/汇总/股票分配_'+date+'_汇总.csv',index=False)
         acc=account_tmp[['accountname','stockcode','sym']].duplicated()
         if(acc[acc==True].index.values.size!=0):
-            print('重复数据编号：',acc[acc==True].index.values)
+            print('重复数据编号：',account_tmp.loc[acc[acc==True].index.values])
             exit()
     add2kdb(account_tmp)
