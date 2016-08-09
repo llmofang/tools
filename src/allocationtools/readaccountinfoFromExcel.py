@@ -10,7 +10,7 @@ def float_to_100int(f):
     return int(f)/100*100
 
 def add2kdb(data):
-    q = qconnection.QConnection(host="139.224.9.75", port=52800, pandas=True)
+    q = qconnection.QConnection(host="127.0.0.1", port=5010, pandas=True)
     #q = qconnection.QConnection(host="127.0.0.1", port=5010, pandas=True)
     q.open()
     print(data)
@@ -18,28 +18,26 @@ def add2kdb(data):
     q.close()
 
 if __name__ == "__main__":
-    date='20160726'
+    date='20160803'
     pd.options.mode.chained_assignment = None  # default='warn' 关闭警告log
     rootdir = './'+date+'/'
+    filename='股票分配表.xls'
     summarydir='汇总'
     fp=None
-
-    if(os.path.isdir(rootdir)):
-        if not os.path.exists(rootdir+summarydir):
-            os.makedirs(rootdir+summarydir)
-        for parent,dirnames,filenames in os.walk(rootdir):
-            if  parent==rootdir:
-                for filename in filenames:
-                    print('reading '+filename)
-                    pdtemp=pd.read_csv(rootdir+filename,encoding='gb2312',skiprows=1)
-                    pdtemp=(pdtemp.dropna(how='all')).T.dropna(how='all').T
-                    if fp is not None:
-                        fp=fp.append(pdtemp)
-                    else:
-                        fp=pdtemp
-    else:
-        fp=pd.read_csv(rootdir,encoding='gb2312',skiprows=1)
-        fp=(fp.dropna(how='all')).T.dropna(how='all').T
+    df=pd.read_excel(rootdir+filename,sheetname=None)
+    if not os.path.exists(rootdir+summarydir):
+        os.makedirs(rootdir+summarydir)
+        fp=None
+        for key in df:
+            print(key)
+            pdtemp=df[key]
+            pdtemp.columns=pdtemp.ix[0].values
+            pdtemp=pdtemp[1:]
+            pdtemp=(pdtemp.dropna(how='all')).T.dropna(how='all').T
+            if fp is not None:
+                fp=fp.append(pdtemp)
+            else:
+                fp=pdtemp
     #print(fp)
     fp = fp.drop(labels=['stockname','available_num','allocated_num','unalocated_num'],axis=1)
     fp = fp.set_index(keys=["accountname","stockcode"])
